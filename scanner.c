@@ -1,4 +1,3 @@
-#include <cctype>
 #include <stdbool.h>
 #include <string.h>
 
@@ -172,6 +171,7 @@ static bool match(char expected) {
 }
 
 Token scan_token() {
+    skip_whitespace();
     scanner.start = scanner.current;
 
     if (is_at_end()) return make_token(TOKEN_EOF);
@@ -207,6 +207,10 @@ Token scan_token() {
                 match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         case '"':
             return string();
+        case '?':
+            return make_token(TOKEN_QUESTION);
+        case ':':
+            return make_token(TOKEN_COLON);
     }
 
 
