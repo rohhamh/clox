@@ -21,7 +21,7 @@ static Obj* allocate_object(size_t size, ObjType type) {
     return object;
 }
 
-static ObjString* allocate_string(char* chars, int length) {
+static ObjString* allocate_string(const char* chars, int length) {
     ObjString *string = ALLOCATE_OBJ_STRING(length + 1);
     string->length = length;
     strncpy(string->chars, chars, length);
@@ -30,14 +30,19 @@ static ObjString* allocate_string(char* chars, int length) {
 }
 
 ObjString* take_string(char* chars, int length) {
-    return allocate_string(chars, length);
+    ObjString* string = allocate_string(chars, length);
+    string->is_owned = true;
+    return string;
 }
 
 ObjString* copy_string(const char* chars, int length) {
-    char* heap_chars = ALLOCATE(char, length + 1);
-    memcpy(heap_chars, chars, length);
-    heap_chars[length] = '\0';
-    return allocate_string(heap_chars, length);
+    /*char* heap_chars = ALLOCATE(char, length + 1);*/
+    /*memcpy(heap_chars, chars, length);*/
+    /*heap_chars[length] = '\0';*/
+    /*return allocate_string(heap_chars, length);*/
+    ObjString* string = allocate_string(chars, length);
+    string->is_owned = false;
+    return string;
 }
 
 void print_object(Value value) {

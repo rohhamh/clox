@@ -23,6 +23,8 @@ struct Obj {
 struct ObjString {
     Obj obj;
     int length;
+    // used to know whether to free the `chars[]` upon freeing `ObjString`
+    bool is_owned;
     char chars[];
 };
 
