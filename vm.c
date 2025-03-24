@@ -81,38 +81,40 @@ static InterpretResult run() {
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
             case OP_CONSTANT: {
-                Value constant = READ_CONSTANT();
-                push(constant);
-                break;
+                                Value constant = READ_CONSTANT();
+                                push(constant);
+                                break;
             }
             case OP_NIL:        push(NIL_VAL);              break;
             case OP_TRUE:       push(BOOL_VAL(true));       break;
             case OP_FALSE:      push(BOOL_VAL(false));      break;
             case OP_EQUAL: {
-                Value b = pop();
-                Value a = pop();
-                push(BOOL_VAL(values_equal(a, b)));
-                break;
+                                Value b = pop();
+                                Value a = pop();
+                                push(BOOL_VAL(values_equal(a, b)));
+                                break;
             }
+            case OP_GREATER:    BINARY_OP(BOOL_VAL,   >);   break;
+            case OP_LESS:       BINARY_OP(BOOL_VAL,   <);   break;
             case OP_ADD:        BINARY_OP(NUMBER_VAL, +);   break;
             case OP_SUBTRACT:   BINARY_OP(NUMBER_VAL, -);   break;
             case OP_MULTIPLY:   BINARY_OP(NUMBER_VAL, *);   break;
             case OP_DIVIDE:     BINARY_OP(NUMBER_VAL, /);   break;
             case OP_NOT:
-                push(BOOL_VAL(is_falsey(pop())));
-                break;
+                                push(BOOL_VAL(is_falsey(pop())));
+                                break;
             case OP_NEGATE:
-                if (!IS_NUMBER(peek(0))) {
-                    runtime_error("Operand must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                /*(*vm.stack_top).as.number *= -1;*/
-                push(NUMBER_VAL(-AS_NUMBER(pop())));
-                break;
+                                if (!IS_NUMBER(peek(0))) {
+                                    runtime_error("Operand must be a number.");
+                                    return INTERPRET_RUNTIME_ERROR;
+                                }
+                                /*(*vm.stack_top).as.number *= -1;*/
+                                push(NUMBER_VAL(-AS_NUMBER(pop())));
+                                break;
             case OP_RETURN: {
-                print_value(pop());
-                printf("\n");
-                return INTERPRET_OK;
+                                print_value(pop());
+                                printf("\n");
+                                return INTERPRET_OK;
             }
         }
     }
