@@ -10,6 +10,9 @@
 #define ALLOCATE_OBJ(type, object_type) \
     (type*)allocate_object(sizeof(type), object_type)
 
+#define ALLOCATE_OBJ_STRING(length) \
+    (ObjString*)allocate_object(sizeof(ObjString) + (length) * sizeof(char), OBJ_STRING)
+
 static Obj* allocate_object(size_t size, ObjType type) {
     Obj* object = (Obj*)reallocate(NULL, 0, size);
     object->type = type;
@@ -19,10 +22,11 @@ static Obj* allocate_object(size_t size, ObjType type) {
 }
 
 static ObjString* allocate_string(char* chars, int length) {
-  ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
-  string->length = length;
-  string->chars = chars;
-  return string;
+    ObjString *string = ALLOCATE_OBJ_STRING(length + 1);
+    string->length = length;
+    strcpy(string->chars, chars);
+    string->chars[length] = '\0';
+    return string;
 }
 
 ObjString* take_string(char* chars, int length) {
