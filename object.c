@@ -24,7 +24,7 @@ static Obj* allocate_object(size_t size, ObjType type) {
 static ObjString* allocate_string(char* chars, int length) {
     ObjString *string = ALLOCATE_OBJ_STRING(length + 1);
     string->length = length;
-    strcpy(string->chars, chars);
+    strncpy(string->chars, chars, length);
     string->chars[length] = '\0';
     return string;
 }
