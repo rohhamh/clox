@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -21,21 +22,33 @@ static Obj* allocate_object(size_t size, ObjType type) {
     return object;
 }
 
-static ObjString* allocate_string(const char* chars, int length) {
+static ObjString* allocate_string(const char* chars, int length, uint32_t hash) {
     ObjString *string = ALLOCATE_OBJ_STRING(length + 1);
     string->length = length;
     strncpy(string->chars, chars, length);
     string->chars[length] = '\0';
+    string->hash = hash;
     return string;
 }
 
+static uint32_t hash_string(const char* key, int length) {
+    uint32_t hash = 2166136261u;
+    for (int i = 0; i < length; i++) {
+        hash ^= (uint32_t) key[i];
+        hash *= 16777619;
+    }
+    return hash;
+}
+
 ObjString* take_string(char* chars, int length) {
-    ObjString* string = allocate_string(chars, length);
+    uint32_t hash = hash_string(chars, length);
+    ObjString* string = allocate_string(chars, length, hash);
     string->is_owned = true;
     return string;
 }
 
 ObjString* copy_string(const char* chars, int length) {
+    uint32_t hash = hash_string(chars, length);
     /*char* heap_chars = ALLOCATE(char, length + 1);*/
     /*memcpy(heap_chars, chars, length);*/
     /*heap_chars[length] = '\0';*/

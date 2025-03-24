@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "value.h"
+#include <stdint.h>
 
 #define OBJ_TYPE(value)         (AS_OBJ(value)->type)
 
@@ -25,6 +26,7 @@ struct ObjString {
     int length;
     // used to know whether to free the `chars[]` upon freeing `ObjString`
     bool is_owned;
+    uint32_t hash;
     char chars[];
 };
 
