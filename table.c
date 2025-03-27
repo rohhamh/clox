@@ -1,7 +1,9 @@
 #include "table.h"
 #include "memory.h"
+#include "object.h"
 #include "value.h"
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #define TABLE_MAX_LOAD 0.75
@@ -17,8 +19,25 @@ void free_table(Table* table) {
     init_table(table);
 }
 
-static Entry* find_entry(Entry* entries, int capacity, ObjString* key) {
-    uint32_t index = key->hash % capacity;
+static Entry* find_entry(Entry* entries, int capacity, Value* key) {
+    uint32_t index;
+    switch (key->type) {
+        case VAL_BOOL:
+            if (AS_BOOL(*key) == true) index = 1;
+            else index = capacity - 1;
+            break;
+        case VAL_NIL:
+            index = 0;
+            break;
+        case VAL_NUMBER:
+            index = (int)AS_NUMBER(*key) % capacity;
+            break;
+        case VAL_OBJ:
+            if (IS_STRING(*key)) {
+                index = (AS_STRING(*key))->hash % capacity;
+            }
+            break;
+    }
     Entry* tombstone = NULL;
 
     for (;;) {
@@ -37,7 +56,7 @@ static Entry* find_entry(Entry* entries, int capacity, ObjString* key) {
     }
 }
 
-bool table_get(Table* table, ObjString* key, Value* value) {
+bool table_get(Table* table, Value* key, Value* value) {
     if (table->count == 0) return false;
 
     Entry* entry = find_entry(table->entries, table->capacity, key);
@@ -71,7 +90,7 @@ static void adjust_capacity(Table* table, int capacity) {
     table->capacity = capacity;
 }
 
-bool table_set(Table* table, ObjString* key, Value value) {
+bool table_set(Table* table, Value* key, Value value) {
     if (table->count + 1 > table->capacity * TABLE_MAX_LOAD) {
         int capacity = GROW_CAPACITY(table->capacity);
         adjust_capacity(table, capacity);
@@ -86,7 +105,7 @@ bool table_set(Table* table, ObjString* key, Value value) {
     return is_new_key;
 }
 
-bool table_delete(Table* table, ObjString* key) {
+bool table_delete(Table* table, Value* key) {
     if (table->count == 0) return false;
 
     Entry* entry = find_entry(table->entries, table->capacity, key);
@@ -115,10 +134,20 @@ ObjString* table_find_string(Table* table, const char* chars,
         Entry* entry = &table->entries[index];
         if (entry->key == NULL) {
             if (IS_NIL(entry->value)) return NULL;
-        } else if (entry->key->length == length &&
-                   entry->key->hash == hash &&
-                   memcmp(entry->key->chars, chars, length) == 0) {
-            return entry->key;
+        } else switch (entry->key->type) {
+            case VAL_OBJ:
+                if (IS_STRING(*entry->key)) {
+                    ObjString* key = AS_STRING(*entry->key);
+                    if (key->length == length &&
+                        key->hash == hash &&
+                        memcmp(key->chars, chars, length) == 0) {
+                        return key;
+                    }
+                }
+                break;
+            default:
+                printf("table_find_string called for entry that's not a string");
+                break;
         }
 
         index = (index + 1) % table->capacity;

@@ -29,7 +29,7 @@ static ObjString* allocate_string(const char* chars, int length, uint32_t hash) 
     strncpy(string->chars, chars, length);
     string->chars[length] = '\0';
     string->hash = hash;
-    table_set(&vm.strings, string, NIL_VAL);
+    table_set(&vm.strings, &OBJ_VAL(string), NIL_VAL);
     return string;
 }
 
