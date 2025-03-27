@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "memory.h"
+#include "table.h"
 #include "value.h"
 #include "vm.h"
 #include "object.h"
@@ -28,6 +29,7 @@ static ObjString* allocate_string(const char* chars, int length, uint32_t hash) 
     strncpy(string->chars, chars, length);
     string->chars[length] = '\0';
     string->hash = hash;
+    table_set(&vm.strings, string, NIL_VAL);
     return string;
 }
 
@@ -42,6 +44,13 @@ static uint32_t hash_string(const char* key, int length) {
 
 ObjString* take_string(char* chars, int length) {
     uint32_t hash = hash_string(chars, length);
+
+    ObjString* interned = table_find_string(&vm.strings, chars, length, hash);
+    if (interned != NULL) {
+        FREE_ARRAY(char, chars, length + 1);
+        return interned;
+    }
+
     ObjString* string = allocate_string(chars, length, hash);
     string->is_owned = true;
     return string;
@@ -49,11 +58,13 @@ ObjString* take_string(char* chars, int length) {
 
 ObjString* copy_string(const char* chars, int length) {
     uint32_t hash = hash_string(chars, length);
+    ObjString* interned = table_find_string(&vm.strings, chars, length, hash);
+    if (interned != NULL) return interned;
     /*char* heap_chars = ALLOCATE(char, length + 1);*/
     /*memcpy(heap_chars, chars, length);*/
     /*heap_chars[length] = '\0';*/
     /*return allocate_string(heap_chars, length);*/
-    ObjString* string = allocate_string(chars, length);
+    ObjString* string = allocate_string(chars, length, hash);
     string->is_owned = false;
     return string;
 }
