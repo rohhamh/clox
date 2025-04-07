@@ -118,17 +118,17 @@ static InterpretResult run() {
             case OP_GREATER:    BINARY_OP(BOOL_VAL,   >);   break;
             case OP_LESS:       BINARY_OP(BOOL_VAL,   <);   break;
             case OP_ADD: {
-                if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
-                    concatenate();
-                } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-                    double b = AS_NUMBER(pop());
-                    double a = AS_NUMBER(pop());
-                    push(NUMBER_VAL(a + b));
-                } else {
-                    runtime_error("Operands must be numbers or strings.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                break;
+                                if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+                                    concatenate();
+                                } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+                                    double b = AS_NUMBER(pop());
+                                    double a = AS_NUMBER(pop());
+                                    push(NUMBER_VAL(a + b));
+                                } else {
+                                    runtime_error("Operands must be numbers or strings.");
+                                    return INTERPRET_RUNTIME_ERROR;
+                                }
+                                break;
             }        
             case OP_SUBTRACT:   BINARY_OP(NUMBER_VAL, -);   break;
             case OP_MULTIPLY:   BINARY_OP(NUMBER_VAL, *);   break;
@@ -144,9 +144,12 @@ static InterpretResult run() {
                                 /*(*vm.stack_top).as.number *= -1;*/
                                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                                 break;
-            case OP_RETURN: {
+            case OP_PRINT:
                                 print_value(pop());
                                 printf("\n");
+                                break;
+            case OP_RETURN: {
+                                // Exit interpreter
                                 return INTERPRET_OK;
             }
         }
